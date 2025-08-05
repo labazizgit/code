@@ -1,1 +1,72 @@
+name: run manual
 
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+
+jobs:
+  job_1:
+    runs-on:
+      - self-hosted
+      - Linux
+      - X64
+
+    outputs:
+      tag: ${{ steps.set_tag.outputs.tag }}
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4.2.2
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Set Docker tag
+        id: set_tag
+        run: echo "TAG=build-${{ github.run_number }}" >> $GITHUB_OUTPUT
+
+      - name: Build Docker image
+        run: docker build -t labazizlab/image-code:${{ steps.set_tag.outputs.tag }} .
+
+      - name: Push Docker image
+        run: docker push labazizlab/image-code:${{ steps.set_tag.outputs.tag }}
+
+      - name: Output image tag
+        run: echo "Image tag is ${{ steps.set_tag.outputs.tag }}"
+
+  job_2:
+    runs-on:
+      - self-hosted
+      - Linux
+      - X64
+    needs: job_1
+    env:
+      TAG: ${{ needs.job_1.outputs.tag }}
+
+    steps:
+      - name: Configure Git
+        run: |
+          git config --global user.name "${{ secrets.K3S_GIT_USERNAME }}"
+          git config --global user.email "${{ secrets.K3S_GIT_EMAIL }}"
+          
+      - name: update deployment
+        run: |
+          cd /k3s
+          sed -i "s#image: labazizlab/image-code:.*#image: labazizlab/image-code:${TAG}#" deploy.yaml
+
+      - name: set github remote using token
+        run: |
+          cd /k3s
+          git remote set-url origin https://x-access-token:${{ secrets.K3S_GIT_TOKEN }}@github.com/labazizlab/k3s.git
+      - name: commit and push
+        run: |
+          cd /k3s
+          git add .
+          git commit -m "Update image to ${TAG}#"
+          git push

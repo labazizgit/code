@@ -32,10 +32,10 @@ jobs:
         run: echo "TAG=build-${{ github.run_number }}" >> $GITHUB_OUTPUT
 
       - name: Build Docker image
-        run: docker build -t labazizlab/image-code:${{ steps.set_tag.outputs.tag }} .
+        run: docker build -t abdulaziz82/app-py:${{ steps.set_tag.outputs.tag }} .
 
       - name: Push Docker image
-        run: docker push labazizlab/image-code:${{ steps.set_tag.outputs.tag }}
+        run: docker push abdulaziz82/app-py:${{ steps.set_tag.outputs.tag }}
 
       - name: Output image tag
         run: echo "Image tag is ${{ steps.set_tag.outputs.tag }}"
@@ -58,12 +58,12 @@ jobs:
       - name: update deployment
         run: |
           cd /k3s
-          sed -i "s#image: labazizlab/image-code:.*#image: labazizlab/image-code:${TAG}#" deploy.yaml
+          sed -i "s#image: abdulaziz82/app-py:.*#image: abdulaziz82/app-py:${TAG}#" deploy.yaml
 
       - name: set github remote using token
         run: |
           cd /k3s
-          git remote set-url origin https://x-access-token:${{ secrets.K3S_GIT_TOKEN }}@github.com/labazizlab/k3s.git
+          git remote set-url origin https://x-access-token:${{ secrets.K3S_GIT_TOKEN }}@github.com/labazizgit/k3s.git
       - name: commit and push
         run: |
           cd /k3s

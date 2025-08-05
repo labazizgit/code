@@ -64,6 +64,7 @@ jobs:
         run: |
           cd /k3s
           git remote set-url origin https://x-access-token:${{ secrets.K3S_GIT_TOKEN }}@github.com/labazizgit/k3s.git
+
       - name: commit and push
         run: |
           cd /k3s

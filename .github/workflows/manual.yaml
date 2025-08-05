@@ -70,4 +70,7 @@ jobs:
           cd /k3s
           git add deploy.yaml
           git commit -m "Update image to ${TAG}#"
-          git push
+          git push 
+
+
+        

@@ -68,6 +68,6 @@ jobs:
       - name: commit and push
         run: |
           cd /k3s
-          git add .
+          git add deploy.yaml
           git commit -m "Update image to ${TAG}#"
           git push
